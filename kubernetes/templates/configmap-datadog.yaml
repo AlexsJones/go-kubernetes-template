@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: datadogconf
+  namespace: {{.namespace}}
+data:
+  datadog.yaml: |-
+    #Injected via kubernetes
+    logs_enabled: true
+  conf.yaml: |-
+    ##Log section
+    logs:
+
+        # - type : (mandatory) type of log input source (tcp / udp / file)
+        #   port / path : (mandatory) Set port if type is tcp or udp. Set path if type is file
+        #   service : (mandatory) name of the service owning the log
+        #   source : (mandatory) attribute that defines which integration is sending the logs
+        #   sourcecategory : (optional) Multiple value attribute. Can be used to refine the source attribtue
+        #   tags: (optional) add tags to each logs collected
+
+      - type: file
+        path: /logs/logrus.log
+        service: {{.projectname}}
+        source: go
+        sourcecategory: sourcecode
+  go_expvar.yaml: |-
+    init_config:
+    instances:
+       -   expvar_url: http://localhost:8080/debug/vars
+           tags:
+               - {{.projectname}}
+           metrics:
+               - path: memstats/PauseTotalNs
+                 alias: go_expvar.gc.pause_time_in_ns
+                 type: rate                  # default is a gauge
+               - path: memstats/Alloc        # will be reported as go_expvar.memstats.alloc
+               - path: points_processed
+                 type: rate

@@ -1,0 +1,7 @@
+image: NOT_SET
+replicas: 5
+token: NOT_SET
+namespace: NOT_SET
+datadogapikey: NOT_SET
+serviceaccountname: kubernetes-NOT_SET-service-account
+port: 8081

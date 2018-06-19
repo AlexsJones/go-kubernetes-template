@@ -1,0 +1,17 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{.projectname}}
+  namespace: {{.namespace}}
+  labels:
+    app: {{.projectname}}
+  annotations:
+    cloud.google.com/load-balancer-type: "Internal"
+spec:
+  type: LoadBalancer
+  sessionAffinity: ClientIP
+  ports:
+   - name: {{.projectname}}-lb
+     port: 8081
+  selector:
+    app: {{.projectname}}

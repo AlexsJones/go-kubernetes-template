@@ -1,0 +1,55 @@
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: {{.projectname}}
+spec:
+  serviceName: {{.projectname}}
+  replicas: {{.replicas}}
+  template:
+    metadata:
+      labels:
+        app: {{.projectname}}
+    spec:
+      serviceAccountName: {{.serviceaccountname}}
+      containers:
+      - name: datadog
+        image: datadog/agent:latest
+        env:
+        - name: DD_LOGS_ENABLED
+          value: "true"
+        - name: DD_API_KEY
+          value: {{.datadogapikey}}
+        volumeMounts:
+          - name: datadogconf
+            mountPath: /etc/datadog-agent/conf.d/go_expvar.yaml
+            subPath: go_expvar.yaml
+          - name: datadogconf
+            mountPath: /etc/datadog-agent/conf.d/go.d/conf.yaml
+            subPath: conf.yaml
+          - name: datadogconf
+            mountPath: /etc/datadog-agent/datadog.yaml
+            subPath: datadog.yaml
+          - name: data
+            mountPath: /logs
+      - name: {{.projectname}}
+        image: {{.image}}
+        imagePullPolicy: Always
+        ports:
+        - containerPort: {{.port}}
+        volumeMounts:
+          - name: data
+            mountPath: /logs
+      volumes:
+        - name: datadogconf
+          configMap:
+            name: datadogconf
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+        - "ReadWriteOnce"
+        storageClassName: standard
+        resources:
+          requests:
+            storage: 10Gi
